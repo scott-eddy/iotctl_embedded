@@ -1,0 +1,16 @@
+/*
+ * Copyright (c) 2020 Eddy Scott
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+&usart1 {
+	current-speed = <115200>;
+	status = "okay";
+
+	at_wfit: esp8266 {
+		compatible = "espressif,esp";
+		label = "ESP8266";
+
+	};
+};
