@@ -487,6 +487,7 @@ void wifi_connect() {
     LOG_ERR("FUCK");
   } else {
     LOG_DBG("Woot");
+    // TODO must be better way to do this
     k_sleep(K_MSEC(5000));
   }
 
