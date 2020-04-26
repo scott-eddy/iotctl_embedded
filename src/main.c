@@ -472,21 +472,6 @@ static int publisher(void)
   return r;
 }
 
-void wifi_connect() {
-  struct net_if *iface = net_if_get_default();
-  static struct wifi_connect_req_params params;
-
-  params.ssid = "BigTank2.3";
-  params.ssid_length = strlen(params.ssid);
-  params.channel = WIFI_CHANNEL_ANY;
-  params.psk = "pufferfish";
-  params.psk_length = strlen(params.psk);
-  params.security = WIFI_SECURITY_TYPE_PSK;
-
-  WifiConnect(&params, -1);
-
-}
-
 void main(void)
 {
   int r = 0, i = 0;
@@ -496,9 +481,17 @@ void main(void)
 	rc = tls_init();
 	PRINT_RESULT("tls_init", rc);
 #endif
+
 	InitNetHandlers();
 	FindWifiIface();
-	wifi_connect();
+    static struct wifi_connect_req_params params;
+    params.ssid = "BigTank2.3";
+    params.ssid_length = strlen(params.ssid);
+    params.channel = WIFI_CHANNEL_ANY;
+    params.psk = "pufferfish";
+    params.psk_length = strlen(params.psk);
+    params.security = WIFI_SECURITY_TYPE_PSK;
+    WifiConnect(&params, -1);
 
   while (1) {
     r = publisher();
