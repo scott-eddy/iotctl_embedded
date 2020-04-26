@@ -483,14 +483,7 @@ void wifi_connect() {
   params.psk_length = strlen(params.psk);
   params.security = WIFI_SECURITY_TYPE_PSK;
 
-  if (net_mgmt(NET_REQUEST_WIFI_CONNECT, iface,
-               &params, sizeof(struct wifi_connect_req_params))) {
-    LOG_ERR("FUCK");
-  } else {
-    LOG_DBG("Woot");
-    // TODO must be better way to do this
-    k_sleep(K_MSEC(5000));
-  }
+  WifiConnect(&params, -1);
 
 }
 
@@ -504,6 +497,7 @@ void main(void)
 	PRINT_RESULT("tls_init", rc);
 #endif
 	InitNetHandlers();
+	FindWifiIface();
 	wifi_connect();
 
   while (1) {

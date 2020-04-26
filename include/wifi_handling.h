@@ -19,19 +19,27 @@
 #define IOTCLT_EMBEDDED_SRC_WIFI_HANDLING_H_
 
 /**
+ * Initialization of network event handlers.  This must be called prior to any other wifi_handling APIs
+ */
+void InitNetHandlers();
+
+/**
  * @brief finds the wifi interface to use
  * @return 0 if success, else -ENXIO
  */
 int FindWifiIface();
 
 /**
- * @brief initialize network handlers
- */
-void InitNetHandlers();
-
-/**
  * @brief scans available networks using the wifi iface
  */
 void ScanNetworks();
+
+/**
+ * @brief connect to the provided network, waiting for at most the provided ms.  -1 ms means wait forever
+ * @param wifi_params: all the details about the network to connect to
+ * @param timeout_ms: the amount of time to wait for. -1 for infinite wait
+ * @return 0 on success
+ */
+int WifiConnect(struct wifi_connect_req_params* wifi_params, int timeout_ms);
 
 #endif //IOTCLT_EMBEDDED_SRC_WIFI_HANDLING_H_
