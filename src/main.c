@@ -16,6 +16,7 @@ LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 #include <net/wifi_mgmt.h>
 
 #include "config.h"
+#include "wifi_handling.h"
 
 /* Buffers for MQTT client. */
 static u8_t rx_buffer[APP_MQTT_BUFFER_SIZE];
@@ -502,6 +503,7 @@ void main(void)
 	rc = tls_init();
 	PRINT_RESULT("tls_init", rc);
 #endif
+	InitNetHandlers();
 	wifi_connect();
 
   while (1) {

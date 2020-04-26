@@ -18,6 +18,20 @@
 #ifndef IOTCLT_EMBEDDED_SRC_WIFI_HANDLING_H_
 #define IOTCLT_EMBEDDED_SRC_WIFI_HANDLING_H_
 
-void
+/**
+ * @brief finds the wifi interface to use
+ * @return 0 if success, else -ENXIO
+ */
+int FindWifiIface();
+
+/**
+ * @brief initialize network handlers
+ */
+void InitNetHandlers();
+
+/**
+ * @brief scans available networks using the wifi iface
+ */
+void ScanNetworks();
 
 #endif //IOTCLT_EMBEDDED_SRC_WIFI_HANDLING_H_
