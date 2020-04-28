@@ -43,12 +43,24 @@ K_SEM_DEFINE(sem_wifi_connected, 0, 1);
 static struct net_if *g_wifi_iface = NULL;
 
 /**
+ * Flag indicating that the wifi iface has an ipv4 addr
+ */
+static bool g_have_ipv4_addr = false;
+
+/**
+ * Flag indicating that the wifi iface has connected to a network
+ */
+static bool g_wifi_connected = false;
+/// The latest status that was reported when the last request to connect to wifi completed
+static struct wifi_status g_latest_wifi_connect_status = {0};
+
+/**
  * @brief Callback handler for when an IPv4 address has been assigned to a network interface
  */
 static void HandleIpv4AddrAdd(struct net_if *iface) {
+
   for (int i = 0; i < NET_IF_MAX_IPV4_ADDR; i++) {
     char buf[NET_IPV4_ADDR_LEN];
-
     struct net_if_addr *if_addr =
         &iface->config.ip.ipv4->unicast[i];
 
@@ -56,6 +68,7 @@ static void HandleIpv4AddrAdd(struct net_if *iface) {
       continue;
     }
 
+    g_have_ipv4_addr = true;
     LOG_INF("Assigned Address: %s",
             log_strdup(net_addr_ntop(AF_INET,
                                      &iface->config.ip.ipv4->unicast[i].address.in_addr,
@@ -69,6 +82,8 @@ static void HandleIpv4AddrAdd(struct net_if *iface) {
                                      &iface->config.ip.ipv4->gw,
                                      buf, sizeof(buf))));
   }
+
+  k_sem_give(&sem_ipv4_address_found);
 }
 
 /**
@@ -112,13 +127,13 @@ static void HandleWifiScanDone(struct net_mgmt_event_callback *cb)
 
 static void HandleWifiConnectResult(struct net_mgmt_event_callback *cb)
 {
-  const struct wifi_status *status =
-      (const struct wifi_status *) cb->info;
-
-  if (status->status) {
-    LOG_WRN("Connection request failed (%d)\n", status->status);
+  g_latest_wifi_connect_status =
+      *(const struct wifi_status *) cb->info;
+  if (g_latest_wifi_connect_status.status == 0) {
+    LOG_DBG("Connected");
+    g_wifi_connected = true;
   } else {
-    LOG_WRN("Connected \n", status->status);
+    LOG_WRN("Connection request failed (%d)", g_latest_wifi_connect_status.status);
   }
 
   k_sem_give(&sem_wifi_connected);
@@ -164,7 +179,6 @@ static struct net_mgmt_event_callback ipv4_event_handler;
 static void Ipv4EventCallback(struct net_mgmt_event_callback *cb,
                               u32_t mgmt_event,
                               struct net_if *iface) {
-
   switch (mgmt_event) {
     case NET_EVENT_IPV4_ADDR_ADD:
       HandleIpv4AddrAdd(iface);
@@ -174,9 +188,7 @@ static void Ipv4EventCallback(struct net_mgmt_event_callback *cb,
       break;
     default:
       break;
-
   }
-
 }
 
 int FindWifiIface() {
@@ -211,7 +223,6 @@ void ScanNetworks() {
 
 }
 
-
 int WifiConnect(struct wifi_connect_req_params* wifi_params, int timeout_ms) {
   if(wifi_params == NULL) {
     LOG_DBG("Invlaid wifi params");
@@ -238,5 +249,17 @@ int WifiConnect(struct wifi_connect_req_params* wifi_params, int timeout_ms) {
   }
 
   int ret = k_sem_take(&sem_wifi_connected, wait_period);
-  return ret;
+  if(ret != 0) {
+    return ret;
+  } else if(g_wifi_connected != true) {
+    return g_latest_wifi_connect_status.status;
+  }
+
+  // Also need to make sure that we get a valid ipv4 address
+  ret = k_sem_take(&sem_ipv4_address_found, wait_period);
+  if(ret != 0) {
+    return ret;
+  } else if(g_have_ipv4_addr != true) {
+    return -EIO;
+  }
 }

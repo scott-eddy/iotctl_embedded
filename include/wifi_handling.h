@@ -36,6 +36,8 @@ void ScanNetworks();
 
 /**
  * @brief connect to the provided network, waiting for at most the provided ms.  -1 ms means wait forever
+ * @details this function considers the connection established when the network stack has indicated a connection
+ *          event and an ipv4 address event
  * @param wifi_params: all the details about the network to connect to
  * @param timeout_ms: the amount of time to wait for. -1 for infinite wait
  * @return 0 on success
