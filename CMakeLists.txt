@@ -6,5 +6,6 @@ project(iotclt_embedded)
 
 target_sources(app PRIVATE
                src/main.c
+               src/mqtt_publisher.c
                src/wifi_handling.c)
 target_include_directories(app PUBLIC include)

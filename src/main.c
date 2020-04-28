@@ -350,7 +350,6 @@ static int publisher(void)
 
 void main(void)
 {
-  int r = 0, i = 0;
 
 	InitNetHandlers();
 	FindWifiIface();
@@ -364,10 +363,9 @@ void main(void)
     WifiConnect(&params, -1);
 
   while (1) {
-    r = publisher();
+    publisher();
 
     k_sleep(K_MSEC(5000));
   }
 
-  exit(r);
 }
